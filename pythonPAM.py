@@ -1,5 +1,11 @@
+import time
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
+
+from pyclustering.cluster.kmedoids import kmedoids
+from pyclustering.cluster import cluster_visualizer
+from pyclustering.utils import read_sample
+from pyclustering.samples.definitions import FCPS_SAMPLES
 
 def calculate_distance_matrix(dataset):
     dist_arr = pdist(dataset)
@@ -17,7 +23,6 @@ def calculateTotalCost(dataset, medoids, distance_matrix):
 
     # This block of code is going to 'calculate' for each point what is 
     # the closest medoid, using the distance matrix
-
     # Taking the colums of the medoids from the distance_matrix
     # Meaning now we have only the colums of the medoids for every point
     medoids_distances = distance_matrix[:][medoids]
@@ -64,15 +69,53 @@ def pam(dataset, k):
     return [medoids, best_config, best_cost]
 
 
+def getRandomDataset(size):
+    arr = np.array([np.random.rand(size)])
+    return arr.T
+
+
 np.set_printoptions(precision=2)
-dataset = np.array([[1,1], [2,1], [0,1], [1,2], [1,0], [5,5], [6,5], [4,5], [5,6], [5,4]], dtype=float)
-#dataset = np.array([[1,1], [2,1], [0,1], [1,2], [1,0]], dtype=float)
-k = 2
+#dataset = np.array([[1,1], [2,1], [0,1], [1,2], [1,0], [5,5], [6,5], [4,5], [5,6], [5,4]], dtype=float)
+#dataset = getRandomDataset(1000)
 
-medoids, config, cost = pam(dataset, k)
+sample = read_sample(FCPS_SAMPLES.SAMPLE_TWO_DIAMONDS)
+trimmed_sample = sample[:100]
+dataset = np.asarray(trimmed_sample, dtype=float)
 
-print("Config Cost =", cost)
-print("Medoids:")
-print(dataset[medoids])
-print("Dataset Labeling: ")
-print(np.concatenate((dataset, dataset[medoids[config]]), axis=1))
+#distance_matrix = calculate_distance_matrix(dataset)
+#calculateTotalCost(dataset, np.array([[1], [2]]), distance_matrix)
+
+print("Dataset size =", len(trimmed_sample))
+
+for k in range(1,11):
+    print("----- k =", k, "-----")
+
+    pam_start_time = time.time()
+
+    medoids, config, cost = pam(dataset, k)
+
+    pam_end_time = time.time()
+
+    elapsedRunTime = (pam_end_time - pam_start_time) * 1000
+
+    #print("Config Cost =", cost)
+    #print("Medoids:")
+    #print(dataset[medoids])
+    #print("Dataset Labeling: ")
+    #print(np.concatenate((dataset, dataset[medoids[config]]), axis=1))
+
+    print("Our Pam run for {:.3f}".format(elapsedRunTime))
+    print()
+
+    pycluster_start_time = time.time()
+    initial_medoids = select_randomly(np.asarray(trimmed_sample, dtype=float), k)
+
+    kmedoids_instance = kmedoids(sample, initial_medoids)
+
+    kmedoids_instance.process()
+
+    pycluster_end_time = time.time()
+
+    elapsedPyclusterRunTime = (pycluster_end_time - pycluster_start_time) * 1000
+
+    print("Pycluster's Pam run for {:.3f}".format(elapsedPyclusterRunTime))
