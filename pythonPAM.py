@@ -140,7 +140,7 @@ def runPamExcel():
     excelSheet = wb.add_sheet('Sheet_1')
 
     sample = read_sample(FCPS_SAMPLES.SAMPLE_TWO_DIAMONDS)
-    trimmed_sample = sample[:400]
+    trimmed_sample = sample[:100]
     dataset = np.asarray(trimmed_sample, dtype=float)
 
     excelSheet.write(0, 0, 'Dataset Size=')
@@ -197,6 +197,18 @@ def runPamExcel():
     wb.save('_example.xls') 
 
 
+def runExample():
+    k = 2
+    dataset = np.array([[0,0], [0,1], [1,0], [5,5], [6,5], [5,6]], dtype=float)
+    medoids, config, cost = pam(dataset, k)
+
+    print("Config Cost =", cost)
+    print("Medoids:")
+    print(dataset[medoids])
+    print("Dataset Labeling: ")
+    print(np.concatenate((dataset, dataset[medoids[config]]), axis=1))
+
 np.set_printoptions(precision=2)
 #runPamExcel()
-runPam()
+#runPam()
+runExample()
