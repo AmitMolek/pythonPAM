@@ -54,6 +54,9 @@ def pam(dataset, k):
 
         for medoid_point in range(np.size(medoids)):
             for data_point in range(dataset_size):
+                if medoids[medoid_point] is data_point:
+                    continue
+
                 medoids_swapped = np.copy(medoids)
                 medoids_swapped[medoid_point] = data_point
                 
@@ -201,6 +204,8 @@ def runExample():
     k = 2
     dataset = np.array([[0,0], [0,1], [1,0], [5,5], [6,5], [5,6]], dtype=float)
     medoids, config, cost = pam(dataset, k)
+
+    print("Labeling:", config)
 
     print("Config Cost =", cost)
     print("Medoids:")
